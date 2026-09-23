@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { LanguageProvider } from "@/components/language-provider";
+import { LocalDemoNotice } from "@/components/local-demo-notice";
 import { AuthProvider } from "@/features/auth/auth-provider";
 import { ServiceWorkerRegistrar } from "@/features/pwa/pwa-controls";
 import "./globals.css";
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <LanguageProvider>
           <AuthProvider>
+            <LocalDemoNotice />
             {children}
           </AuthProvider>
         </LanguageProvider>

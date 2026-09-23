@@ -6,6 +6,14 @@
 **/.ruff_cache
 **/tests
 .local
+**/node_modules
+**/.next
+**/out
+**/test-results
+**/playwright-report
+.git
+.agents
+.claude
 *.env
 *.env.*
 .env

@@ -10,7 +10,7 @@ dependencies = [
   "alembic>=1.16,<2", "psycopg[binary]>=3.2,<4", "firebase-admin>=7,<8",
   "google-genai>=1.50,<3", "google-cloud-storage>=3,<4",
   "google-cloud-tasks>=2.19,<3", "google-cloud-bigquery>=3.30,<4",
-  "pillow>=12,<13", "python-magic>=0.4.27,<0.5",
+  "pillow>=13,<14", "python-magic>=0.4.27,<0.5",
 ]
 
 [dependency-groups]

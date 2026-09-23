@@ -213,3 +213,8 @@ Typecheck clean, lint clean (zero errors, zero warnings), 108 web unit tests pas
 
 `wrangler deploy` requires `CLOUDFLARE_API_TOKEN`, which is not in this environment.
 The build and its pre-upload validation both pass; only the upload is blocked.
+## Public-fork cleanup follow-up
+
+The `codex/cleanup-demo` branch in `Muneer320/AgriSense` records the new cleanup under `workstreams/cleanup/`. Windows baseline had 311 passes, one reproducibility failure and two skipped integration tests. Explicit UTF-8/LF generation, LF attributes, a manifest-byte regression and Windows virtualenv hook selection repair the failure: 313 backend tests and lint pass. No contract semantics or scientific constants changed. Real local API/browser setup remains in progress; no deployment or live farmer/provider use is claimed.
+
+The later Compose slice now verifies two real Chromium journeys with Auth Emulator, PostgreSQL and FastAPI, including journal media and ownership denial. Backend mock envelopes are labeled demo; local signed-media uploads have the necessary PUT CORS preflight while untrusted origins remain denied. Four-service Docker builds and web checks pass. Full remote CI and graceful recreation evidence are pending in `workstreams/cleanup/progress.md`; no cloud deployment is implied.

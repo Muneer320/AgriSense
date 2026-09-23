@@ -5,7 +5,7 @@ import asyncio
 import json
 import logging
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,8 +28,8 @@ API_PREFIX = '/api/v1'
 IDEMPOTENT = {(method, path) for method, path, *_ in ROUTES if method == 'POST'} | {('DELETE', '/me')}
 
 
-def envelope(data: Any, request_id: str, warnings: list[str] | None = None) -> dict[str, Any]:
-    meta = c.Meta(request_id=request_id, data_mode='live', generated_at=d.utcnow(), warnings=warnings or [])
+def envelope(data: Any, request_id: str, warnings: list[str] | None = None, data_mode: Literal['live','demo'] = 'live') -> dict[str, Any]:
+    meta = c.Meta(request_id=request_id, data_mode=data_mode, generated_at=d.utcnow(), warnings=warnings or [])
     return {'data': data, 'meta': meta.model_dump(mode='json')}
 
 
@@ -120,7 +120,7 @@ def build_dispatcher(app: FastAPI, method: str, path: str, request_model, respon
             return failure(PlatformError('RESPONSE_CONTRACT_ERROR', 'This result could not be produced. Please retry.', 500, True), request_id)
         if queued and settings.start_jobs_inline:
             start_queued_work(request.app)
-        return JSONResponse(envelope(validated, request_id), status_code=code)
+        return JSONResponse(envelope(validated, request_id, data_mode='demo' if settings.agrisense_data_mode=='mock' else 'live'), status_code=code)
 
     dispatch.__name__ = f'{method.lower()}_{path}'
     return dispatch
@@ -175,7 +175,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     origins = [origin.strip() for origin in settings.cors_allowed_origins.split(',') if origin.strip()]
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,
-                       allow_methods=['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+                       allow_methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
                        allow_headers=['Authorization', 'Content-Type', 'Idempotency-Key'], max_age=600)
 
     @app.middleware('http')

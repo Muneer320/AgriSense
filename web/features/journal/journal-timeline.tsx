@@ -7,6 +7,7 @@ import { formatDate, formatMoney, formatQuantity, formatTime } from "@/lib/forma
 import { cn } from "@/lib/utils";
 import { CheckCircle2, CircleDashed, Paperclip, XCircle } from "lucide-react";
 import { ACTION_META, JOURNAL_ACTIONS, standingLabel, type JournalAction } from "./actions";
+import { JournalPhoto } from "./journal-photo";
 
 export function JournalTimeline({
   entries,
@@ -261,11 +262,13 @@ function EntryCard({
       </dl>
 
       {entry.media_ids && entry.media_ids.length > 0 ? (
-        <p className="mt-3 flex items-center gap-1.5 border-t border-mist pt-2 text-xs text-slate">
+        <div className="mt-3 border-t border-mist pt-2">
+        <p className="flex items-center gap-1.5 text-xs text-slate">
           <Paperclip aria-hidden className="size-3.5 shrink-0" />
-          {entry.media_ids.length} attachment{entry.media_ids.length === 1 ? "" : "s"} — viewing
-          attachments is not built yet
+          {entry.media_ids.length} attachment{entry.media_ids.length === 1 ? "" : "s"}
         </p>
+        {entry.media_ids.map((id,index)=><JournalPhoto key={id} id={id} index={index+1}/>)}
+        </div>
       ) : null}
 
       {standing === "unreviewed" ? (

@@ -58,7 +58,8 @@ export function toE164(raw: string): string | null {
 const OTP_REQUIRED = new Set(["+919620577459"]);
 
 export function needsSmsVerification(e164: string): boolean {
-  return OTP_REQUIRED.has(e164);
+  // The local demo exercises real Phone Auth against the emulator; no SMS is sent.
+  return process.env.NEXT_PUBLIC_LOCAL_DEMO === "true" || OTP_REQUIRED.has(e164);
 }
 
 /**

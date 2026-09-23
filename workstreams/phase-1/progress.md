@@ -134,6 +134,10 @@ Recorded per slice below as work proceeds.
 
 ## Next concrete step
 
+### Public-fork maintenance checkpoint
+
+The later `codex/cleanup-demo` maintenance pass is recorded in `workstreams/cleanup/progress.md`. It wires the existing soil-card review into onboarding, removes orphan localization, extends core controls in five dictionaries, upgrades the web toolchain and repairs idle deadline displays. 175 unit tests, typecheck and production build pass; lint has zero errors/12 warnings, production dependency audit zero findings, full development audit 15 moderate findings. Non-English terminology remains pending human review. Earlier next-step notes below describe the original phase, not the new fork's active queue.
+
 1. Retire the provisional types in `web/lib/api/types.ts` in favour of
    `web/lib/generated/api.ts` (explicitly requested by Phase 3, and prevents
    drift). Real shapes differ from the guesses in ways that matter:

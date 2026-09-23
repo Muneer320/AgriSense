@@ -1,5 +1,7 @@
 # Continue Phase 3 here
 
+**Public-fork maintenance:** subsequent work on `Muneer320/AgriSense`, branch `codex/cleanup-demo`, is tracked in `workstreams/cleanup/`. It preserves this historical team handoff and uses no team credentials. Contract generation now has explicit UTF-8/LF handling and byte-level manifest verification; 313 Windows backend tests pass. Organization deployment and original branches remain unchanged.
+
 All progress is saved. Read this file, then `progress.md`, `decisions.md`,
 `interface-requests.md`, `test-evidence.md`, `contracts/contract_v1.md`, `AGENTS.md`, and the
 current `git log` before changing anything.

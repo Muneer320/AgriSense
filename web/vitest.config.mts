@@ -14,6 +14,7 @@ export default defineConfig({
     // localStorage global shadows jsdom's. See tests/setup.ts.
     setupFiles: ["./tests/setup.ts"],
     globals: true,
+    maxWorkers: 2,
     include: ["tests/unit/**/*.test.{ts,tsx}", "lib/**/*.test.{ts,tsx}"],
     exclude: ["node_modules", ".next", "tests/e2e"],
   },

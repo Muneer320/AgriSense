@@ -1,4 +1,6 @@
 "use client";
+import { useLanguage } from "@/components/language-provider";
+import { useDeadlineReached } from "@/lib/use-deadline";
 
 /**
  * P1-05 — is this a good morning to go out, and why.
@@ -80,6 +82,7 @@ function windowHours(interval: Interval): string {
 }
 
 export function ReadinessScreen({ seasonId }: { seasonId: string }) {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const uid = user?.uid ?? null;
 
@@ -102,7 +105,7 @@ export function ReadinessScreen({ seasonId }: { seasonId: string }) {
 
   return (
     <AppShell
-      title="When to go out"
+      title={t("readinessTitle")}
       headerActions={<DataModeBadge mode={query.meta?.data_mode} />}
     >
       <div className="space-y-4">
@@ -140,7 +143,7 @@ function Detail({
   forecast: ForecastBundle | null;
   seasonId: string;
 }) {
-  const expired = Date.parse(recommendation.expires_at) <= Date.now();
+  const expired = useDeadlineReached(Date.parse(recommendation.expires_at));
   const blocked = recommendation.status === "blocked";
   const insufficient = recommendation.status === "insufficient_data";
   const failedChecks = (recommendation.safety_checks ?? []).filter(

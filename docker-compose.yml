@@ -1,0 +1,79 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: agrisense
+      POSTGRES_DB: agrisense_demo
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "agrisense"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  auth:
+    build: ./infra/demo/auth
+    ports:
+      - "127.0.0.1:9099:9099"
+      - "127.0.0.1:4000:4000"
+    volumes:
+      - auth:/data
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9099/emulator/v1/projects/demo-agrisense/config').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+      start_period: 20s
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["sh", "-c", "alembic upgrade head && exec uvicorn agrisense.main:app --host 0.0.0.0 --port 8080 --workers 1"]
+    environment:
+      AGRISENSE_ENV_FILE: /dev/null
+      APP_ENV: development
+      DATABASE_URL: postgresql+psycopg://agrisense@db:5432/agrisense_demo
+      FIREBASE_PROJECT_ID: demo-agrisense
+      FIREBASE_AUTH_EMULATOR_HOST: auth:9099
+      AGRISENSE_DATA_MODE: mock
+      ALLOW_DEMO_DATA: "true"
+      SOILGRIDS_ENABLED: "false"
+      WHATSAPP_SEND_MODE: outbox
+      CORS_ALLOWED_ORIGINS: http://localhost:5176,http://127.0.0.1:5176
+      PUBLIC_API_BASE_URL: http://localhost:8103
+      PUBLIC_WEB_BASE_URL: http://localhost:5176
+      LOCAL_MEDIA_DIR: /app/.local/media
+    ports:
+      - "127.0.0.1:8103:8080"
+    volumes:
+      - media:/app/.local
+    depends_on:
+      db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready',timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  web:
+    build:
+      context: .
+      dockerfile: infra/demo/web.Dockerfile
+    ports:
+      - "127.0.0.1:5176:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+volumes:
+  postgres:
+  auth:
+  media:

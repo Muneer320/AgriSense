@@ -20,6 +20,8 @@
  */
 import { LanguageSwitcher, useLanguage } from "@/components/language-provider";
 import { Button, Callout, Card, Skeleton, TextField } from "@/components/ui";
+import { SoilCardUpload } from "@/features/soil/soil-card-upload";
+import { writeActiveFieldId } from "@/features/fields/active-field";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ApiError } from "@/lib/api/envelope";
 import { catalog as catalogApi, fields as fieldsApi } from "@/lib/api/routes";
@@ -238,6 +240,7 @@ export function OnboardingFlow() {
     if (!draft || !uid) return;
     const fieldId = draft.fieldId ?? (await ensureField());
     if (!fieldId) return;
+    writeActiveFieldId(uid, fieldId);
     clearDraft(uid);
     router.replace(`/?field=${encodeURIComponent(fieldId)}`);
   }
@@ -1137,16 +1140,17 @@ function ModeCard({
 }
 
 function SoilStep({ draft, update }: StepProps) {
+  const { t } = useLanguage();
   return (
     <div className="space-y-3">
       <p className="text-sm text-slate">
-        A soil health card makes the advice more specific. It is not required.
+        {t("soilStepIntro")}
       </p>
       {(
         [
-          ["have_card", "I have a soil health card", "Upload it and check the values we read."],
-          ["no_card", "I do not have one", "We will use estimated soil data, clearly labelled."],
-          ["later", "I will add it later", "Skip for now."],
+          ["have_card", t("soilHaveCard"), t("soilUploadDetail")],
+          ["no_card", t("soilNoCard"), t("soilEstimateDetail")],
+          ["later", t("soilLater"), t("skip")],
         ] as const
       ).map(([intent, title, detail]) => (
         <ModeCard
@@ -1159,17 +1163,15 @@ function SoilStep({ draft, update }: StepProps) {
       ))}
 
       {draft.soil.intent === "have_card" ? (
-        <Callout tone="caution" title="Upload is not built yet">
-          Reading a soil card needs the media upload and extraction path, which is not wired up on
-          this screen yet. Choose &ldquo;I will add it later&rdquo; to continue — the field saves
-          without it.
-        </Callout>
+        draft.fieldId ? <SoilCardUpload
+          field={{id:draft.fieldId,name:draft.land.name}}
+          onSaved={()=>update(d=>void(d.soil.confirmed=true))}
+        /> : <Callout tone="info">{t("soilMissingField")}</Callout>
       ) : null}
 
       {draft.soil.intent === "no_card" ? (
         <Callout tone="info" className="text-xs">
-          Any soil value we estimate will be shown as an estimate, never as a measurement from
-          your field.
+          {t("soilEstimateDetail")}
         </Callout>
       ) : null}
     </div>
@@ -1183,16 +1185,17 @@ function ReviewStep({
   draft: OnboardingDraft;
   area: ReturnType<typeof parseArea> | null;
 }) {
+  const { t } = useLanguage();
   const rows: Array<[string, string]> = [
-    ["Field name", draft.land.name.trim() || "—"],
+    [t("fieldNameLabel"), draft.land.name.trim() || "—"],
     [
-      "Area",
+      t("areaLabel"),
       area?.ok
         ? `${formatArea(roundHectares(area.areaHa), "ha")} (entered ${area.enteredArea} ${area.unit})`
         : "—",
     ],
     [
-      "Location",
+      t("locationLabel"),
       draft.location.latitude !== null
         ? `${draft.location.latitude.toFixed(5)}, ${draft.location.longitude?.toFixed(5)} · ${
             draft.location.source === "gps" ? "GPS" : "approximate"
@@ -1203,10 +1206,10 @@ function ReviewStep({
     ],
     ["Watering", draft.land.irrigationMethod ?? "Not set"],
     [
-      "Crop",
+      t("cropLabel"),
       draft.crop.cropName ?? (draft.crop.mode === "undecided" ? "Not set" : "To be added"),
     ],
-    ["Soil test", draft.soil.intent === "have_card" ? "To be uploaded" : draft.soil.intent === "no_card" ? "None" : "Later"],
+    [t("soilTestLabel"), draft.soil.confirmed ? t("soilConfirmedLabel") : draft.soil.intent === "have_card" ? t("soilPendingLabel") : draft.soil.intent === "no_card" ? t("soilNoCard") : t("soilLater")],
   ];
 
   return (

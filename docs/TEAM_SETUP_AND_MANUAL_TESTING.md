@@ -1,5 +1,7 @@
 # AgriSense team setup and manual testing
 
+> Historical team/cloud setup. For this fork's credential-free synthetic demo, start with [LOCAL_DEMO.md](LOCAL_DEMO.md); current checks are in [DEVELOPMENT.md](DEVELOPMENT.md). The original environment and deployed providers below are not verified by the local demo.
+
 This is the copy-ready handoff for a teammate who has cloned the repository.
 The implementation source of truth is `docs/AGRISE_INTEGRATION_PLAN.md`.
 

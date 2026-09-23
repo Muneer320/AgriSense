@@ -20,7 +20,8 @@ RUN uv sync --frozen --no-dev
 FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/app/.venv/bin:$PATH"
 # Runs unprivileged; the container filesystem is read-only in the service definition.
-RUN useradd --system --uid 10001 --create-home agrisense
+RUN useradd --system --uid 10001 --create-home agrisense \
+    && mkdir -p /app/.local && chown agrisense:agrisense /app/.local
 WORKDIR /app
 COPY --from=build --chown=agrisense:agrisense /app /app
 USER 10001

@@ -94,7 +94,7 @@ export type OnboardingDraft = {
     dateApproximate: boolean;
   };
 
-  soil: { intent: "have_card" | "no_card" | "later" | null };
+  soil: { intent: "have_card" | "no_card" | "later" | null; confirmed?: boolean };
 };
 
 export function newDraft(idempotencyKey: string): OnboardingDraft {

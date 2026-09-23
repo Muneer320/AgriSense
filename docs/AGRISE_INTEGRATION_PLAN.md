@@ -1,5 +1,7 @@
 # AgriSense implementation plan
 
+> Historical team implementation handoff. This fork's current local environment and verification are documented in [LOCAL_DEMO.md](LOCAL_DEMO.md), [DEVELOPMENT.md](DEVELOPMENT.md) and [cleanup progress](../workstreams/cleanup/progress.md). Prior cloud/provider results below are not revalidated by the synthetic local demo.
+
 This is the handoff document for the next implementation session. It is
 intentionally self-contained: read this file, `AGENTS.md`, the contract files,
 and the linked WhatsApp guide before changing code.

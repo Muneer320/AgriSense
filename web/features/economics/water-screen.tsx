@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "@/components/language-provider";
 
 import { formatArea } from "@/lib/format";
 
@@ -35,6 +36,7 @@ import Link from "next/link";
 import { explainCode, explainMissing } from "@/lib/missing-reasons";
 
 export function WaterScreen({ seasonId }: { seasonId: string }) {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const uid = user?.uid ?? null;
 
@@ -54,7 +56,7 @@ export function WaterScreen({ seasonId }: { seasonId: string }) {
   const areaHa = season?.allocated_area_ha ?? 1;
 
   return (
-    <AppShell title="Water">
+    <AppShell title={t("waterTitle")}>
       <div className="space-y-4">
         {season ? (
           <Card className="p-4">
@@ -72,7 +74,7 @@ export function WaterScreen({ seasonId }: { seasonId: string }) {
           <Skeleton className="h-56 w-full rounded-card" />
         ) : waterQuery.error ? (
           waterQuery.error.isDependencyUnavailable ? (
-            <Callout tone="caution" title="No water plan for this season yet">
+            <Callout tone="caution" title={t("waterUnavailableTitle")}>
               <p>
                 A water plan needs this season evaluated against a forecast and reviewed crop
                 water records for your area. AgriSense will not put a figure on how much to
@@ -93,7 +95,7 @@ export function WaterScreen({ seasonId }: { seasonId: string }) {
               <Card className="p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-ink">
                   <Info aria-hidden className="size-4 text-forest" />
-                  What this assumes
+                  {t("assumptionsTitle")}
                 </p>
                 <ul className="mt-2 list-inside list-disc text-sm text-slate">
                   {water.assumptions.map((item) => (
