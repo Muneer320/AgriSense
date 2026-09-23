@@ -25,7 +25,7 @@ const PHRASES: Record<string, string> = {
   seasonal_climate_required: "needs the historical climate for your area",
   rain_or_et0_missing: "the forecast is missing rain or evaporation for that day",
   paddy_management_required:
-    "flooded paddy needs a different water model, which is not built yet",
+    "ponded paddy needs water-management details; a dry-soil stress score does not apply",
   reference_et0_unavailable_for_daily_water_balance:
     "no evaporation figure was available for your field",
 

@@ -4,6 +4,7 @@ on:
   push:
     branches: ["codex/**", "main"]
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -51,7 +52,7 @@ jobs:
 
       - name: Tests
         working-directory: backend
-        run: .venv/bin/python -m pytest tests/platform -q
+        run: .venv/bin/python -m pytest -q
 
       - name: Migrations apply, reverse and match the models
         working-directory: backend
@@ -63,6 +64,49 @@ jobs:
 
       - name: No secret or README file is tracked
         run: python3 scripts/security/check_staged.py --all-tracked
+
+  web:
+    name: Web (types, tests, lint, export, production audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-fund --no-audit
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+      - run: npm audit --omit=dev
+
+  demo:
+    name: Real local demo (Auth Emulator, PostgreSQL, browser)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-fund --no-audit
+        working-directory: web
+      - run: npx playwright install --with-deps chromium
+        working-directory: web
+      - run: docker compose -p agrisense-demo up -d --build --wait --wait-timeout 180
+      - run: npx playwright test --config playwright.demo.config.ts
+        working-directory: web
+      - name: Stop this job's services
+        if: always()
+        run: docker compose -p agrisense-demo down
 
   audit:
     name: Dependency audit

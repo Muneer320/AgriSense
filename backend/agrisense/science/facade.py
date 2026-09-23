@@ -180,7 +180,8 @@ def _water(
             daily.append(measurement(None, "L", f"{day.local_date}:rain_or_et0_missing"))
             depletion = None
             continue
-        # Rice remains demand-only until ponded-water/AWD management is supplied.
+        # Rice uses the explicit shallow-ponding assumption in root_zone_day;
+        # its result carries provenance rather than a root-zone stress score.
         balance = root_zone_day(
             zone,
             depletion_mm=depletion,

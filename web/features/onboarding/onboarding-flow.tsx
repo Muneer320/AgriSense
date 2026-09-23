@@ -21,6 +21,7 @@
 import { LanguageSwitcher, useLanguage } from "@/components/language-provider";
 import { Button, Callout, Card, Skeleton, TextField } from "@/components/ui";
 import { SoilCardUpload } from "@/features/soil/soil-card-upload";
+import { writeActiveFieldId } from "@/features/fields/active-field";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ApiError } from "@/lib/api/envelope";
 import { catalog as catalogApi, fields as fieldsApi } from "@/lib/api/routes";
@@ -239,6 +240,7 @@ export function OnboardingFlow() {
     if (!draft || !uid) return;
     const fieldId = draft.fieldId ?? (await ensureField());
     if (!fieldId) return;
+    writeActiveFieldId(uid, fieldId);
     clearDraft(uid);
     router.replace(`/?field=${encodeURIComponent(fieldId)}`);
   }

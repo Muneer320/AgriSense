@@ -92,7 +92,7 @@ export function FieldDashboard() {
           title="No fields yet"
           message="Register a field and AgriSense can start telling you when to spray, how much water it needs, and what the season is worth."
           action={
-            <Link href="/onboarding?add=1">
+            <Link href="/onboarding">
               <Button size="lg">
                 <Plus aria-hidden className="size-4" />
                 Add your first field
