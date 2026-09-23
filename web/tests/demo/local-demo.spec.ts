@@ -55,15 +55,19 @@ test('real emulator sign-in, onboarding, media journal, persistence and account 
   await expect(page).toHaveURL(`http://127.0.0.1:5176/?field=${field.id}`);
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
 
-  // Actual API setup for an active season; no mocked routes or fixture responses.
-  const seasonResponse = await request.post(`${api}/fields/${field.id}/seasons`, {
-    headers: { ...headers, 'Idempotency-Key': crypto.randomUUID() },
-    data: { crop_id: 'wheat', sowing_date: '2026-10-01', date_confidence: 'estimated', allocated_area_ha: 1, status: 'active' },
-  });
+  // Create the season through the real form, not a fixture or direct database seed.
+  await page.getByText('I already know which crop', { exact: true }).click();
+  await page.getByRole('button', { name: 'Wheat', exact: true }).click();
+  await page.getByLabel('Sowing date (leave blank if you are not sure)', { exact: true }).fill('2026-10-01');
+  const seasonSaved = page.waitForResponse(r => r.url() === `${api}/fields/${field.id}/seasons` && r.request().method() === 'POST');
+  await page.getByRole('button', { name: 'Add this crop', exact: true }).click();
+  const seasonResponse = await seasonSaved;
   expect(seasonResponse.status(), await seasonResponse.text()).toBe(201);
   const season = (await seasonResponse.json()).data;
   await page.reload();
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await expect(page.getByText('Wheat', { exact: true }).first()).toBeVisible();
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('field-desktop.png'), fullPage: true });
   await page.goto('/journal');
   await page.getByRole('button', { name: 'Add entry', exact: true }).click();
