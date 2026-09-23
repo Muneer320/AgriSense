@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 import sys
@@ -15,6 +16,12 @@ from contracts.routes import ROUTES
 
 def test_generation_is_reproducible():
     subprocess.run([sys.executable,str(ROOT/'scripts/generate_contracts.py'),'--check'],check=True)
+
+
+def test_manifest_describes_the_actual_artifact_bytes():
+    manifest=json.loads((ROOT/'contracts/manifest.json').read_text(encoding='utf-8'))
+    for name,expected in manifest['artifacts'].items():
+        assert hashlib.sha256((ROOT/name).read_bytes()).hexdigest()==expected,name
 
 
 def test_all_operations_have_concrete_envelopes_and_auth():
