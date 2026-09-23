@@ -81,6 +81,7 @@ export function firebaseAuth(): Auth | null {
   const emulator = emulatorUrl();
   if (emulator) {
     connectAuthEmulator(auth, emulator, { disableWarnings: true });
+    auth.settings.appVerificationDisabledForTesting = true;
   }
   cachedAuth = auth;
   return auth;

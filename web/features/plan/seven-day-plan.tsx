@@ -35,7 +35,7 @@ export function SevenDayPlan() {
 
   if (status === "initialising") {
     return (
-      <AppShell title="Plan">
+      <AppShell title={t("navPlan")}>
         <div className="space-y-4" aria-busy="true">
           <Skeleton className="h-20 w-full rounded-card" />
           <Skeleton className="h-40 w-full rounded-card" />
@@ -46,7 +46,7 @@ export function SevenDayPlan() {
 
   return (
     <AppShell
-      title="Plan"
+      title={t("navPlan")}
       headerActions={<DataModeBadge mode={query.meta?.data_mode} />}
     >
       <div className="grid gap-4 lg:grid-cols-3">

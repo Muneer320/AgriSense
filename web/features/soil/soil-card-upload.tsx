@@ -9,6 +9,8 @@
  * on a field. A value that could not be read stays empty with its reason shown;
  * it is never filled with a typical figure and never shown as zero.
  */
+import { useLanguage } from "@/components/language-provider";
+import type { TranslationKey } from "@/lib/locale";
 import { Button, Callout, Card, Skeleton, TextField } from "@/components/ui";
 import { newIdempotencyKey } from "@/lib/api/client";
 import type { Field, SoilObservation } from "@/lib/api/contract";
@@ -26,13 +28,12 @@ type Stage =
   | { name: "review"; draft: SoilObservation }
   | { name: "saved" };
 
-const READABLE: Record<string, string> = {
-  ph: "pH",
-  organic_carbon: "Organic carbon",
-  nitrogen: "Nitrogen",
-  phosphorus: "Phosphorus",
-  potassium: "Potassium",
-};
+const READABLE = {
+  organic_carbon: "soilCarbon",
+  nitrogen: "soilNitrogen",
+  phosphorus: "soilPhosphorus",
+  potassium: "soilPotassium",
+} as const satisfies Record<string, TranslationKey>;
 const FIELDS = ["ph", "organic_carbon", "nitrogen", "phosphorus", "potassium"] as const;
 
 type Reading = { value?: number | null; unit?: string; missing_reason?: string | null } | null;
@@ -41,7 +42,8 @@ function readingOf(draft: SoilObservation, key: string): Reading {
   return (draft as unknown as Record<string, Reading>)[key] ?? null;
 }
 
-export function SoilCardUpload({ field, onSaved }: { field: Field; onSaved?: () => void }) {
+export function SoilCardUpload({ field, onSaved }: { field: Pick<Field,"id"|"name">; onSaved?: () => void }) {
+  const { t } = useLanguage();
   const [stage, setStage] = useState<Stage>({ name: "idle" });
   const [error, setError] = useState<string | null>(null);
   const input = useRef<HTMLInputElement | null>(null);
@@ -68,11 +70,11 @@ export function SoilCardUpload({ field, onSaved }: { field: Field; onSaved?: () 
         }
         if (state.status === "failed" || state.status === "dead_letter") {
           throw new Error(
-            state.error?.message ?? "This card could not be read. Try a clearer, straighter photo.",
+            state.error?.message ?? t("soilReadFailed"),
           );
         }
       }
-      throw new Error("Reading the card is taking longer than expected. Try again in a moment.");
+      throw new Error(t("soilReadSlow"));
     } catch (cause) {
       setStage({ name: "idle" });
       setError(
@@ -80,7 +82,7 @@ export function SoilCardUpload({ field, onSaved }: { field: Field; onSaved?: () 
           ? cause.message
           : cause instanceof Error
             ? cause.message
-            : "The card could not be uploaded.",
+            : t("soilUploadFailed"),
       );
     }
   }
@@ -101,7 +103,7 @@ export function SoilCardUpload({ field, onSaved }: { field: Field; onSaved?: () 
   if (stage.name === "saved") {
     return (
       <Callout tone="success" title="Soil test saved">
-        Your soil values are recorded for {field.name} and are used in future advice.
+        {t("soilSaved",{field:field.name})}
       </Callout>
     );
   }
@@ -112,11 +114,10 @@ export function SoilCardUpload({ field, onSaved }: { field: Field; onSaved?: () 
     <Card className="p-4">
       <p className="flex items-center gap-2 text-sm font-semibold text-ink">
         <FileText aria-hidden className="size-4 text-forest" />
-        Add your Soil Health Card
+        {t("soilUploadTitle")}
       </p>
       <p className="mt-1 text-sm text-slate">
-        Photograph the card. AgriSense reads the printed values and shows them to you to check
-        before anything is saved.
+        {t("soilUploadDetail")}
       </p>
 
       <input
@@ -136,14 +137,14 @@ export function SoilCardUpload({ field, onSaved }: { field: Field; onSaved?: () 
       {working ? (
         <div className="mt-3 space-y-2" aria-live="polite">
           <p className="text-sm text-slate">
-            {stage.name === "uploading" ? "Uploading the photo…" : "Reading the card…"}
+            {stage.name === "uploading" ? t("soilUploading") : t("soilReading")}
           </p>
           <Skeleton className="h-16 w-full rounded-card" />
         </div>
       ) : (
         <Button className="mt-3" onClick={() => input.current?.click()}>
           <Upload aria-hidden className="size-4" />
-          Choose a photo
+          {t("soilChoosePhoto")}
         </Button>
       )}
     </Card>
@@ -159,6 +160,7 @@ function ReviewDraft({
   onCancel: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useLanguage();
   const [values, setValues] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     for (const key of FIELDS) {
@@ -198,17 +200,16 @@ function ReviewDraft({
       );
       onSaved();
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : "These values could not be saved.");
+      setError(cause instanceof ApiError ? cause.message : t("soilSaveFailed"));
       setBusy(false);
     }
   }
 
   return (
     <Card className="p-4">
-      <p className="text-sm font-semibold text-ink">Check what was read from your card</p>
+      <p className="text-sm font-semibold text-ink">{t("soilReviewTitle")}</p>
       <p className="mt-1 text-sm text-slate">
-        Correct anything that is wrong. A value AgriSense could not read is left empty — leave
-        it empty rather than guessing.
+        {t("soilReviewBody")}
       </p>
 
       <div className="mt-3 space-y-3">
@@ -218,7 +219,7 @@ function ReviewDraft({
           return (
             <div key={key}>
               <TextField
-                label={`${READABLE[key] ?? key}${reading.unit ? ` (${reading.unit})` : ""}`}
+                label={`${key==="ph" ? "pH" : t(READABLE[key])}${reading.unit ? ` (${reading.unit})` : ""}`}
                 type="number"
                 inputMode="decimal"
                 step="0.01"
@@ -239,10 +240,10 @@ function ReviewDraft({
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Button onClick={save} busy={busy}>
-          Save these values
+          {t("soilSaveValues")}
         </Button>
         <Button variant="secondary" onClick={onCancel} disabled={busy}>
-          Discard
+          {t("cancel")}
         </Button>
       </div>
     </Card>

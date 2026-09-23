@@ -97,6 +97,7 @@ export function EditSeasonForm({
   return (
     <Card className="p-4">
       <p className="flex items-center gap-2 text-h3 font-semibold">
+        {/* eslint-disable-next-line react-hooks/static-components -- cropIcon only selects stable imported Lucide icons; it never creates a component. */}
         <Icon aria-hidden className="size-4 shrink-0 text-forest" />
         Edit {cropName}
       </p>

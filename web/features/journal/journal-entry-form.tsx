@@ -7,6 +7,7 @@ import { ApiError, fieldErrors } from "@/lib/api/envelope";
 import type { JournalCreate } from "@/lib/api/contract";
 import { seasons as seasonsApi } from "@/lib/api/routes";
 import { cn } from "@/lib/utils";
+import { useDeadlineReached } from "@/lib/use-deadline";
 import { Camera, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import {
@@ -82,10 +83,7 @@ export function JournalEntryForm({
   const meta = ACTION_META[action];
 
   const occurredAt = useMemo(() => istLocalToInstant(occurredLocal), [occurredLocal]);
-  const inFuture = useMemo(
-    () => (occurredAt ? Date.parse(occurredAt) > Date.now() + 60_000 : false),
-    [occurredAt],
-  );
+  const inFuture = !useDeadlineReached(occurredAt ? Date.parse(occurredAt) - 60_000 : null);
 
   function selectAction(next: JournalAction) {
     setAction(next);

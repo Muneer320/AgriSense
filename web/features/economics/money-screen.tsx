@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "@/components/language-provider";
 
 /**
  * P1-06 — what this season is expected to be worth, and what it has cost so far.
@@ -30,6 +31,7 @@ function rupees(value: number): string {
 }
 
 export function MoneyScreen({ seasonId }: { seasonId: string }) {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const uid = user?.uid ?? null;
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
@@ -65,7 +67,7 @@ export function MoneyScreen({ seasonId }: { seasonId: string }) {
   );
 
   return (
-    <AppShell title="Money">
+    <AppShell title={t("moneyTitle")}>
       <div className="space-y-4">
         {seasonQuery.isLoading ? (
           <Skeleton className="h-24 w-full rounded-card" />
@@ -76,7 +78,7 @@ export function MoneyScreen({ seasonId }: { seasonId: string }) {
         <Card className="p-5">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate">
             <Wallet aria-hidden className="size-3.5" />
-            Spent so far
+            {t("spentSoFar")}
           </p>
           {journalQuery.isLoading ? (
             <Skeleton className="mt-2 h-8 w-32" />
@@ -93,7 +95,7 @@ export function MoneyScreen({ seasonId }: { seasonId: string }) {
             </>
           )}
           <Link href="/journal" className="mt-2 inline-block text-sm font-semibold text-forest underline">
-            Add or check a cost
+            {t("checkCost")}
           </Link>
         </Card>
 
